@@ -4,6 +4,7 @@ Create a Kafka producer in Oracle Apex, which produces events into Confluent Clo
 ## setup the Confluent Cloud a fully managed realt-time streaming platform
 What is easier than goto [Confluent Cloud](https://www.confluent.io/confluent-cloud) and sign up for a real-time streaming platform? I can say, not much.
 Register yourself and you will have immediately a running kafka cluster and can start your work.
+![Confluent Cloud Cluster](images/cc_cluster.png)
 
 If the cluster is running, create your environment and then create a new cluster. The cluster setup allows to create an API Key with secret, please create one(go tp cluster setting/ API access). We also need access to fully managed Schema registry. Please create also a Key with secret to access the Schema registry (go to Schema/ API access).
 
@@ -63,6 +64,8 @@ Now, you are able to create a new topic in your Confluent Cloud cluster (you cou
 ccloud kafka topic create cmfeedback
 ccloud kafka topic list
 ```
+![Confluent Cloud Cluster](images/cc_topic.png)
+
 I decided to create a Producer in my APEX app, which should collect feedback of all the attendes of my events I visit as presenter. I run my business card in APEX, where you are able to download my business card via QR code.
 The Schema of my Topic looks like this:
 ```
@@ -81,6 +84,7 @@ I put that Schema into a file cmfeedback.json and register that schema as value 
 ccloud schema-registry schema create --subject cmfeedback-value --schema ./cmfeedback.json
 ```
 Check in the UI if Schema is registered against my topic. It should look like this:
+![Confluent Cloud Cluster](images/cc_topic_schema.png)
 
 ## Add the producer into APEX 
 Now, the Kafka-REST proxy is running and let me allow to send stupid REST call against the Confluent Cloud Kafka cluster. my payload would be of type JSON, and type of data is registered as Schema. A typically looks like this by the way:
@@ -111,6 +115,7 @@ WHEN OTHERS THEN
 END;
 ```
 You just have to install the PL/SQL in your APEX environment and use it in your APEX app. I did create a page with a Form based on the procedure, there is no coding, just clicking:
+![APEX Page Form based on Procedure](images/apex.png)
 
 Now, you extend your APEX app with Kafka-Producer using the KAFKA-REST Proxy and produce events into your Confluent Cloud Kafka cluster.
 
