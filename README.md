@@ -1,20 +1,20 @@
 # KafkaProducer-in-oracle-apex
 Create a Kafka producer in Oracle Apex, which produces events into Confluent Clound real-time event streaming platform.
 
-## setup the Confluent Cloud a fully managed realt-time streaming platform
-What is easier than goto [Confluent Cloud](https://www.confluent.io/confluent-cloud) and sign up for a real-time streaming platform? I can say, not much.
+## setup the Confluent Cloud - a fully managed real-time streaming platform
+What is easier than go to [Confluent Cloud](https://www.confluent.io/confluent-cloud) and sign up for a real-time streaming platform? I can say, not much.
 Register yourself and you will have immediately a running kafka cluster and can start your work.
 ![Confluent Cloud Cluster](images/cc_cluster.png)
 
-If the cluster is running, create your environment and then create a new cluster. The cluster setup allows to create an API Key with secret, please create one(go tp cluster setting/ API access). We also need access to fully managed Schema registry. Please create also a Key with secret to access the Schema registry (go to Schema/ API access).
+If the cluster is running, create your environment and then create a new cluster. The cluster setup allows to create an API Key with secret, please create one (go to cluster setting/ API access). We also need access to fully managed Schema registry. Please create also a Key with secret to access the Schema registry (go to Schema/ API access).
 
-The confluent cloud is running for you a fully managed zookeeper, broker and Schema registry cluster, with Topic management, connector management (only cloud object connectors right now, more will come), KSQL (in preview, full GA will follow), consumer management and some monitor features.
+The confluent cloud is running for you a fully managed zookeeper, broker and Schema registry cluster, with Topic management, connector management (only cloud objectstorage connectors right now, more will come), KSQL (in preview, full GA will follow), consumer management and some monitor features.
 
-## The project goal - run a kafka producer into APEX
-I would like to add a producer into my Oracle Application Express application and produce event from apex into my Kafka cluster running in the confluent cloud.
+# The project goal - run a kafka producer in Oracle APEX app
+I would like to add a producer into my Oracle Application Express application and produce events from apex into my Kafka cluster running in the confluent cloud.
 It is easy going...
 
-### Use a Kafka-REST proxy with the Confluent Cloud
+## Use a Kafka-REST proxy with the Confluent Cloud
 To access the Confluent Cloud very easily from APEX, I decided to use a Kafka-Rest proxy. For this I prepared a terraform script, which will setup and run a Kafka-REST Proxy and access the Confluent Cloud. For this demo setup, no security in Kafka-REST proxy was activated. The REST-Proxy will listen on port 80.
 Everything what you need to do, is to enter all your content regarding AWS API keys and Confluent Cloud API Keys like
   * aws API key
@@ -44,12 +44,12 @@ Your Kafka REST-Proxy will be up and running after provisioning. The output afte
 REST_Call = List Topics with curl: curl http://pub-IP:80/topics
 SSH = SSH  Access: ssh -i ~/keys/yourkey.pem ec2-user@PUB-IP
 ```
-Test your Kafka-REST proxy and list all topics in confluent cloud:
+Test your Kafka-REST proxy and list all topics from confluent cloud:
 ```
 curl http://pub-IP:80/topics
 ```
 
-### Setup your local machine for access the confluent cloud
+## Setup your local machine for access the confluent cloud
 Confluent cloud offers a cli to manage the confluent cloud from the prompt. Please active the ccloud of confluent and follow the [installation guide](https://docs.confluent.io/current/cloud/cli/install.html):
 Active your Confluent Cloud customer with cc cli:
 ```
@@ -66,7 +66,7 @@ ccloud kafka topic list
 ```
 ![Confluent Cloud Cluster](images/cc_topic.png)
 
-I decided to create a Producer in my APEX app, which should collect feedback of all the attendes of my events I visit as presenter. I run my business card in APEX, where you are able to download my business card via QR code.
+I decided to create a Producer in my APEX app, which should collect feedback of all the attendes of my events I visited as presenter. I run my business card in APEX, where you are able to download my business card via QR code.
 The Schema of my Topic looks like this:
 ```
 {
@@ -87,15 +87,17 @@ Check in the UI if Schema is registered against my topic. It should look like th
 ![Confluent Cloud Cluster](images/cc_topic_schema.png)
 
 ## Add the producer into APEX 
-Now, the Kafka-REST proxy is running and let me allow to send stupid REST call against the Confluent Cloud Kafka cluster. my payload would be of type JSON, and type of data is registered as Schema. A typically looks like this by the way:
+Now, the Kafka-REST proxy is running and let me allow to send REST calls against the Confluent Cloud Kafka cluster. My payload would be of type JSON, and type of data is registered as Schema. A typically Prodcuer REST Call with curl looks like this by the way:
 ```
 curl -X POST -H "Content-Type: application/vnd.kafka.json.v2+json" \
       -H "Accept: application/vnd.kafka.v2+json" \
       --data '{"records":[{"value":{"email":"trick@duck","forWhat":"Meetup Dresden","feedback":"Fantastic"}}]}' "http://pub-ip:80/topics/cmfeedback"
 ```
-This call format is transfered into a PL/SQL procedure in APEX, so that I can easy produce events into the Kafka cluster running ini Confluent Cloud. The procedure looks like this:
+This call format is transfered into a PL/SQL procedure in APEX, so that I can easy produce events into the Kafka cluster running in Confluent Cloud. The PLSQL procedure looks like this:
 ```
-create or replace Procedure ProduceMessage2CC(p_email varchar2, p_forwhat varchar2, p_feedback varchar2) as
+create or replace Procedure ProduceMessage2CC(p_email varchar2, 
+                                              p_forwhat varchar2, 
+                                              p_feedback varchar2) as
     l_clob       CLOB;
     l_payload    varchar2(4000) := NULL;
 BEGIN
@@ -114,14 +116,14 @@ WHEN OTHERS THEN
       raise_application_error (-20002,'An error has occurred during REST-CALL');
 END;
 ```
-You just have to install the PL/SQL in your APEX environment and use it in your APEX app. I did create a page with a Form based on the procedure, there is no coding, just clicking:
+You just have to install the PL/SQL in your APEX environment and use it in your APEX app. I did create a page with a Form based on that procedure, so that APEX is doing everything for me. There is no coding, just clicking:
 ![APEX Page Form based on Procedure](images/apex.png)
 
-Now, you extend your APEX app with Kafka-Producer using the KAFKA-REST Proxy and produce events into your Confluent Cloud Kafka cluster.
+Now, you extended your APEX app with a Kafka-Producer using the KAFKA-REST Proxy and produce events into your Confluent Cloud Kafka cluster.
 
 ## On my Laptop I do check the feedback with KSQL
-On my laptop I connect myself with the Confluent Cloud and review the feedback. For This I run my local installation of KSQL and do just some simple select.
-Before running KSQL I need the correct properties file, which tells KSQL that the cluster is running in Confluent Cloud. So create a correct property file first and than run KSQL:
+On my laptop I connect myself with the Confluent Cloud and review the feedback. For This I run my local installation of KSQL and do just some simple SQL selects.
+Before running KSQL I need the correct properties file, which tells KSQL that the cluster is running in Confluent Cloud. So create a correct property file first and than run KSQL. You can use my echo command and just change your correct data for Keys/Secrets/URLs:
 ```
 # first configure ccloud for ksql
 echo "# Configuration derived from template_delta_configs/example_ccloud_config
@@ -154,6 +156,9 @@ ksql.internal.topic.rksql.internal.topic.rksql.internal.topic.rksql.internal.top
 ksql.schema.registry.basic.auth.credentials.source=USER_INFO
 ksql.schema.registry.basic.auth.user.info=CONFLUENTCLOUD-SCHEMAAPIKEY:CONFLUENTCLOUD-SCHEMAAPISECRET
 ksql.schema.registry.url=CONFLUENTCLOUD-SCHEMAURL" > ccloud_ksql.properties
+```
+Now you can start th KSQL Server and then doing your analysis:
+```
 # Start KSQL server on your local machine
 ksql-server-start ./ccloud_ksql.properties
 # do the analysis
@@ -173,8 +178,12 @@ ksql> select * from s_cmfeedback where forWHAT = 'Meetup Dresden';
 1569676788019 | null | trick@duck | Meetup Dresden | Fantastic
 1569676983377 | null | cmutzlitz@confluent.io | Meetup Dresden | great event and lot of discussion
 ksql> exit
-## Stop the KSQL Server
+```
+If your are finish stop the server:
+```
+# Stop the KSQL Server
 ksql-server-stop ./ccloud_ksql.properties
-
+```
 # Conclusion
 I really love APEX because it really easy to create a cool web app. The add-on for Kafka-Producer is also very easy if you use a Kafka-REST Prooxy.
+Happy coding....
