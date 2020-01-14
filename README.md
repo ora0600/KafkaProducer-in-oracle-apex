@@ -43,10 +43,18 @@ Your Kafka REST-Proxy will be up and running after provisioning. The output afte
 ```
 REST_Call = List Topics with curl: curl http://pub-IP:80/topics
 SSH = SSH  Access: ssh -i ~/keys/yourkey.pem ec2-user@PUB-IP
+KSQL = sudo ksql via SSH  Access: ssh -i ~/keys/yourkey.pem ec2-user@PUB-IP
 ```
 Test your Kafka-REST proxy and list all topics from confluent cloud:
 ```
 curl http://pub-IP:80/topics
+```
+Test your KSQL and list all topics from confluent cloud:
+```
+ssh -i ~/keys/yourkey.pem ec2-user@PUB-IP
+sudo ksql
+ksql> list topics;
+ksql> exit;
 ```
 
 ## Setup your local machine for access the confluent cloud
